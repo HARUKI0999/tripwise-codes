@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TripWise - Home</title>
+    <style>
+        body { font-family: Arial; background: #f5f7fa; margin: 0; }
+        header { background: #0077b6; color: white; padding: 15px 30px;
+                 display: flex; justify-content: space-between; align-items: center; }
+        .intro { text-align: center; margin: 30px; }
+        .destinations { display: flex; justify-content: center; flex-wrap: wrap; gap: 20px; }
+        .card { width: 300px; background: white; border-radius: 10px; padding: 15px;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+        img { width: 100%; border-radius: 10px; }
+        .btn { display: inline-block; background: #0077b6; color: white; padding: 8px 12px;
+               text-decoration: none; border-radius: 5px; }
+        .plan-btn { display: block; margin: 20px auto; background: #023e8a; padding: 10px 20px; width: 200px; text-align: center; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <header>
+        <h2>TripWise</h2>
+        <div>
+            Welcome, {{ user }} |
+            <a href="{{ url_for('logout') }}" style="color: white;">Logout</a>
+        </div>
+    </header>
+
+    <div class="intro">
+        <h2>Discover the Best of the Philippines!</h2>
+        <p>TripWise helps you plan your next adventure — find tourist spots, routes, restaurants, and hotels with ease.</p>
+        <a href="{{ url_for('plan_trip') }}" class="btn plan-btn">🗺️ Plan a Trip</a>
+    </div>
+
+    <div class="destinations">
+        {% for key, dest in destinations.items() %}
+        <div class="card">
+            <img src="{{ dest.image }}" alt="{{ dest.name }}">
+            <h3>{{ dest.name }}</h3>
+            <p>{{ dest.description[:100] }}...</p>
+            <a class="btn" href="{{ url_for('destination_detail', place=key) }}">View Details</a>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Plan Your Trip - TripWise</title>
+    <style>
+        body { font-family: Arial; background-color: #f5f7fa; padding: 30px; }
+        form { background: white; padding: 20px; max-width: 400px; margin: auto;
+               border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+        input, select, button { width: 100%; padding: 10px; margin: 8px 0; border-radius: 5px; border: 1px solid #ccc; }
+        button { background: #0077b6; color: white; border: none; }
+    </style>
+</head>
+<body>
+    <h2 style="text-align:center;">Plan Your Trip</h2>
+
+    <form method="POST">
+       <label for="destination">Destination:</label>
+<select name="destination" id="destination" required>
+    <option value="hundred_islands" selected>Hundred Islands, Pangasinan</option>
+    <option disabled>──────────</option>
+    {% for key, dest in destinations.items() %}
+        <option value="{{ key }}">{{ dest.name }}</option>
+    {% endfor %}
+</select>
+
+
+        <label for="budget">Budget (PHP):</label>
+        <input type="number" name="budget" id="budget" placeholder="Enter budget" required>
+
+        <label for="days">Number of Days:</label>
+        <input type="number" name="days" id="days" placeholder="Enter trip length" required>
+
+        <button type="submit">Create Trip Plan</button>
+    </form>
+</body>
+</html>
