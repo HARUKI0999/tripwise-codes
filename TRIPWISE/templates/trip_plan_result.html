@@ -68,8 +68,8 @@
         <h3>🏨 Hotels</h3>
 <ul>
     {% for hotel in plan.hotels %}
-    <li><a href="{{ hotel.link }}" target="_blank">{{ hotel.name }}</a></li>
-    {% endfor %}
+  <li><a href="{{ url_for('place_details', place_name=hotel.name) }}">{{ hotel.name }}</a></li>
+{% endfor %}
 </ul>
 
 <h3>🍽️ Restaurants</h3>

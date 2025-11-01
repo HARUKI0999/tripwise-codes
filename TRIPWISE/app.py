@@ -2,6 +2,9 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 import os
 import json
 import traceback
+from dotenv import load_dotenv
+load_dotenv()
+
 
 # Gemini client
 # Install with: pip install google-generativeai
@@ -135,9 +138,9 @@ def static_hundred_islands_plan(budget: int, days: int):
         "remaining": remaining,
         "suggestion": "You’re within budget!" if remaining > 0 else "Consider increasing your budget.",
         "itinerary": itinerary,
-        "food": [{"name": "Maxine by the Sea", "link": "#"}, {"name": "Lucap Grill & Resto", "link": "#"}],
-        "hotels": [{"name": "Island Tropic Hotel and Restaurant", "link": "https://www.google.com/search?q=Island+Tropic+Hotel+and+Restaurant+Hundred+Islands"}],
-        "attractions": [{"name": "Governor’s Island", "link": "#"}, {"name": "Quezon Island", "link": "#"}, {"name": "Children’s Island", "link": "#"}, {"name": "Cuenco Island", "link": "#"}]
+        "food": [{"name": "Maxine by the Sea", "link": "https://www.maxinebythesea.com"}],
+        "hotels": [{"name": "Island Blue Grill & Restaurant", "link": "https://restaurantguru.com/Island-Blue-Grill-and-Restaurant-Alaminos"},{"name": "islandtropichotel", "link": "https://islandtropichotel.com"}],
+        "attractions": [{"name": "Islands", "link": "https://national-parks.org/philippines/hundred-islands"}]
     }
 
 # ------------------- Gemini integration -------------------
@@ -167,8 +170,9 @@ def call_gemini_generate(prompt: str, max_tokens: int = 800):
         # Example usage — model name may vary by availability in your account
         # This follows the pattern used earlier: model.generate_content(prompt)
         # Adjust if your gemini client differs.
-        model = genai.GenerativeModel("gemini-pro")  # change if needed
-        response = model.generate_content(prompt, max_output_tokens=max_tokens)
+        model = genai.GenerativeModel("models/gemini-1.5-flash")
+        response = model.generate_content(prompt)
+
 
         # The response shape may vary; try to get text in common places:
         text = None
@@ -276,11 +280,13 @@ Do not include any explanation outside the JSON.
 import requests
 
 # ---------- GOOGLE PLACES INTEGRATION ----------
+import requests
+
+# ---------- GOOGLE PLACES INTEGRATION (UPDATED) ----------
 def enrich_with_google_places(items, place):
     """
-    Replace Gemini's generic Google-search links with real ones
-    fetched from the Google Places API.
-    Looks for official website or Facebook page if listed.
+    Replace Gemini's generic links with real websites or Google Maps URLs
+    using the Google Places API.
     """
     api_key = os.environ.get("GOOGLE_PLACES_KEY")
     if not api_key:
@@ -289,37 +295,41 @@ def enrich_with_google_places(items, place):
 
     enriched = []
     for entry in items:
-        # Support both string or dict input
         name = entry["name"] if isinstance(entry, dict) else str(entry)
         try:
             url = "https://maps.googleapis.com/maps/api/place/findplacefromtext/json"
             params = {
                 "input": f"{name} {place} Philippines",
                 "inputtype": "textquery",
-                "fields": "name,website,url",
+                # ✅ use valid fields only
+                "fields": "name,place_id,website,formatted_address",
                 "key": api_key
             }
             res = requests.get(url, params=params, timeout=10).json()
+            print(f"🔍 Google Places lookup for {name} → {res}")  # debug
 
             link = None
-            if res.get("candidates"):
+            if res.get("status") == "OK" and res.get("candidates"):
                 info = res["candidates"][0]
-                link = info.get("website") or info.get("url")
+                link = info.get("website")
+                if not link and info.get("place_id"):
+                    # ✅ fallback to a working Google Maps link
+                    link = f"https://www.google.com/maps/place/?q=place_id:{info['place_id']}"
 
-            # fallback to Google Search if no real link
+            # ✅ final fallback (if API returned nothing)
             if not link:
-                link = f"https://www.google.com/search?q={name.replace(' ', '+')}+{place}"
+                link = f"https://www.google.com/search?q={name.replace(' ', '+')}+{place}+Philippines"
 
             enriched.append({"name": name, "link": link})
 
         except Exception as e:
-            print(f"Google Places error for {name}: {e}")
+            print(f"⚠️ Google Places error for {name}: {e}")
             enriched.append({
                 "name": name,
                 "link": f"https://www.google.com/search?q={name.replace(' ', '+')}+{place}"
             })
-    return enriched
 
+    return enriched
 
 # ------------------- ROUTES -------------------
 @app.route('/')
@@ -385,6 +395,30 @@ def destination_detail(place):
         return redirect(url_for('home'))
     destination = destinations[place]
     return render_template('destination.html', destination=destination)
+
+@app.route('/place-details/<place_name>')
+def place_details(place_name):
+    """Show details of a single place."""
+    api_key = os.environ.get("GOOGLE_PLACES_KEY")
+    place_data = {}
+
+    if api_key:
+        try:
+            url = "https://maps.googleapis.com/maps/api/place/findplacefromtext/json"
+            params = {
+                "input": f"{place_name} Philippines",
+                "inputtype": "textquery",
+                "fields": "name,formatted_address,website,url,rating,user_ratings_total",
+                "key": api_key
+            }
+            res = requests.get(url, params=params).json()
+            if res.get("candidates"):
+                place_data = res["candidates"][0]
+        except Exception as e:
+            place_data["error"] = str(e)
+
+    return render_template('place_details.html', place_name=place_name, place=place_data)
+
 
 # ------------------- PLAN A TRIP -------------------
 @app.route('/plan-trip', methods=['GET', 'POST'])
