@@ -1,93 +1,126 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Trip Plan Result - {{ plan.destination }}</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 40px;
-            background: #f8f9fa;
-        }
-        .container {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
-            max-width: 800px;
-            margin: auto;
-        }
-        h1 {
-            color: #003049;
-            text-align: center;
-        }
-        .budget {
-            background: #e9f5ff;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
-        ul {
-            list-style-type: '🗓️ ';
-            padding-left: 20px;
-        }
-        h3 {
-            color: #0077b6;
-            margin-top: 25px;
-        }
-        a {
-            display: inline-block;
-            margin-top: 15px;
-            color: #003049;
-            text-decoration: none;
-            font-weight: bold;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Trip Plan – {{ plan.destination }}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: #f4f6f8;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .container {
+      max-width: 900px;
+      margin-top: 40px;
+      margin-bottom: 60px;
+    }
+    .card {
+      border: none;
+      border-radius: 15px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      margin-bottom: 20px;
+    }
+    .card-day {
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      margin-top: 10px;
+      border-left: 5px solid #0077b6;
+    }
+    .card-day h5 {
+      color: #0077b6;
+      font-weight: bold;
+    }
+    .section-title {
+      color: #003049;
+      border-bottom: 2px solid #0077b6;
+      display: inline-block;
+      margin-bottom: 10px;
+      padding-bottom: 5px;
+    }
+    .info-box {
+      background: #e9f5ff;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 25px;
+    }
+    a {
+      text-decoration: none;
+      color: #0077b6;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    .list-group-item {
+      border: none;
+      padding: 8px 0;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Trip Plan for {{ plan.destination }}</h1>
-
-        <div class="budget">
-            <p><strong>Days:</strong> {{ plan.days }}</p>
-            <p><strong>Your Budget:</strong> ₱{{ plan.budget }}</p>
-            <p><strong>Estimated Cost:</strong> ₱{{ plan.estimated_cost }}</p>
-            <p><strong>Remaining:</strong> ₱{{ plan.remaining }}</p>
-            <p><strong>Suggestion:</strong> {{ plan.suggestion }}</p>
-        </div>
-
-        <h3>🗺️ Suggested Itinerary</h3>
-        <ul>
-            {% for day in plan.itinerary %}
-            <li>{{ day }}</li>
-            {% endfor %}
-        </ul>
-
-        <h3>🏨 Hotels</h3>
-<ul>
-    {% for hotel in plan.hotels %}
-  <li><a href="{{ url_for('place_details', place_name=hotel.name) }}">{{ hotel.name }}</a></li>
-{% endfor %}
-</ul>
-
-<h3>🍽️ Restaurants</h3>
-<ul>
-    {% for r in plan.food %}
-    <li><a href="{{ r.link }}" target="_blank">{{ r.name }}</a></li>
-    {% endfor %}
-</ul>
-
-<h3>🏝️ Tourist Attractions</h3>
-<ul>
-    {% for a in plan.attractions %}
-    <li><a href="{{ a.link }}" target="_blank">{{ a.name }}</a></li>
-    {% endfor %}
-</ul>
-
-
-        <a href="{{ url_for('home') }}">⬅️ Back to Home</a>
+  <div class="container">
+    <div class="text-center mb-4">
+      <h1 class="fw-bold text-primary">Your Trip to {{ plan.destination }}</h1>
+      <p class="text-muted">Here’s your personalized itinerary plan 📅</p>
     </div>
+
+    <div class="info-box">
+      <h4 class="mb-3">💰 Budget Summary</h4>
+      <p><strong>Duration:</strong> {{ plan.days }} days</p>
+      <p><strong>Budget:</strong> ₱{{ plan.budget }}</p>
+      <p><strong>Estimated Cost:</strong> ₱{{ plan.estimated_cost }}</p>
+      <p><strong>Remaining:</strong> ₱{{ plan.remaining }}</p>
+      <p><strong>Suggestion:</strong> {{ plan.suggestion }}</p>
+    </div>
+
+    <div>
+      <h4 class="section-title">🗓️ Itinerary</h4>
+      {% for day in plan.itinerary %}
+      <div class="card-day">
+        <h5>Day {{ loop.index }}</h5>
+        <p>{{ day }}</p>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="mt-4">
+      <h4 class="section-title">🏨 Hotels</h4>
+      <ul class="list-group">
+        {% for hotel in plan.hotels %}
+        <li class="list-group-item">
+          <a href="{{ hotel.link }}" target="_blank">🏠 {{ hotel.name }}</a>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div class="mt-4">
+      <h4 class="section-title">🍽️ Restaurants</h4>
+      <ul class="list-group">
+        {% for r in plan.food %}
+        <li class="list-group-item">
+          <a href="{{ r.link }}" target="_blank">🍴 {{ r.name }}</a>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div class="mt-4">
+      <h4 class="section-title">🏝️ Tourist Attractions</h4>
+      <ul class="list-group">
+        {% for a in plan.attractions %}
+        <li class="list-group-item">
+          <a href="{{ a.link }}" target="_blank">📍 {{ a.name }}</a>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div class="text-center mt-5">
+      <a href="{{ url_for('home') }}" class="btn btn-outline-primary">⬅️ Back to Home</a>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

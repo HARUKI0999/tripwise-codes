@@ -3,15 +3,14 @@ import os
 import json
 import traceback
 from dotenv import load_dotenv
-load_dotenv()
 
-
-# Gemini client
-# Install with: pip install google-generativeai
+# Optional Gemini import
 try:
     import google.generativeai as genai
 except Exception:
     genai = None
+
+load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = 'tripwise_secret_key'
@@ -22,7 +21,6 @@ users = {
 }
 
 # ------------------- DESTINATIONS DATA -------------------
-# (kept same as your previous list; Hundred Islands included)
 destinations = {
     "palawan": {
         "name": "El Nido, Palawan",
@@ -33,20 +31,22 @@ destinations = {
             "🚗 Van ride from Puerto Princesa to El Nido (5-6 hours)"
         ],
         "food": [
-            "Artcafe – Famous for seafood pasta and smoothies",
-            "Trattoria Altrove – Serves Italian-style pizza and pasta"
+            {"name": "Artcafe", "link": "https://www.elnidoartcafe.com"},
+            {"name": "Trattoria Altrove", "link": "https://www.facebook.com/altroveelnido"},
+            {"name": "The Nesting Table", "link": "https://thenestingtable.com"}
         ],
         "hotels": [
-            "El Nido Resorts Miniloc Island",
-            "Cadlao Resort & Restaurant"
+            {"name": "El Nido Resorts Miniloc Island", "link": "https://www.elnidoresorts.com"},
+            {"name": "Cadlao Resort & Restaurant", "link": "https://cadlaoresort.com"},
+            {"name": "Lagùn Hotel", "link": "https://www.lagunhotel.com"}
         ],
         "attractions": [
-            "Big Lagoon",
-            "Small Lagoon",
-            "Secret Beach",
-            "Nacpan Beach"
+            {"name": "Big Lagoon", "link": "https://www.tripadvisor.com/Attraction_Review-g294256-d320434"},
+            {"name": "Small Lagoon", "link": "https://www.tripadvisor.com/Attraction_Review-g294256-d320436"},
+            {"name": "Nacpan Beach", "link": "https://www.tripadvisor.com/Attraction_Review-g294256-d2038658"}
         ]
     },
+
     "baguio": {
         "name": "Baguio City",
         "image": "https://images.unsplash.com/photo-1605540436418-ef47b9f6d16b",
@@ -56,76 +56,54 @@ destinations = {
             "🚗 Private car via TPLEX (approx. 4 hours)"
         ],
         "food": [
-            "Good Taste – Affordable local favorites",
-            "Hill Station – Cozy restaurant with Western and Filipino cuisine"
+            {"name": "Good Taste", "link": "https://www.facebook.com/goodtastebaguio"},
+            {"name": "Hill Station", "link": "https://hillstationbaguio.com"},
+            {"name": "Cafe by the Ruins", "link": "https://www.facebook.com/cafebytheruins"}
         ],
         "hotels": [
-            "The Manor at Camp John Hay",
-            "Azalea Hotels & Residences"
+            {"name": "The Manor at Camp John Hay", "link": "https://campjohnhay.ph/the-manor"},
+            {"name": "Azalea Hotels & Residences", "link": "https://www.azaleabaguio.com"},
+            {"name": "Microtel by Wyndham", "link": "https://www.microtel-baguio.com"}
         ],
         "attractions": [
-            "Burnham Park",
-            "Mines View Park",
-            "Session Road",
-            "Camp John Hay"
+            {"name": "Burnham Park", "link": "https://www.tripadvisor.com/Attraction_Review-g298445-d1069086"},
+            {"name": "Mines View Park", "link": "https://www.tripadvisor.com/Attraction_Review-g298445-d1069094"},
+            {"name": "Camp John Hay", "link": "https://www.tripadvisor.com/Attraction_Review-g298445-d1069078"}
         ]
     },
-    "cebu": {
-        "name": "Cebu",
-        "image": "https://images.unsplash.com/photo-1598951730302-8a9859c03e03",
-        "description": "Cebu is a mix of history, adventure, and modern living. Enjoy beaches, temples, and whale shark encounters.",
-        "routes": [
-            "✈️ Flight from Manila to Mactan-Cebu International Airport (1 hour)",
-            "🚗 Accessible by ferry from nearby islands"
-        ],
-        "food": [
-            "Rico’s Lechon – The most famous Cebu lechon",
-            "Lantaw Native Restaurant – Local dishes with scenic views"
-        ],
-        "hotels": [
-            "Shangri-La’s Mactan Resort and Spa",
-            "Quest Hotel Cebu"
-        ],
-        "attractions": [
-            "Magellan’s Cross",
-            "Temple of Leah",
-            "Kawasan Falls",
-            "Oslob Whale Shark Watching"
-        ]
-    },
+
     "hundred_islands": {
         "name": "Hundred Islands National Park",
         "image": "https://upload.wikimedia.org/wikipedia/commons/2/2c/Hundred_Islands_National_Park_Alaminos_Pangasinan.jpg",
-        "description": "Hundred Islands National Park in Alaminos City, Pangasinan, features 124 stunning islands and islets. It’s perfect for island hopping, snorkeling, and sightseeing.",
+        "description": "Hundred Islands National Park features 124 stunning islands and islets — perfect for island hopping and snorkeling.",
         "routes": [
             "🚌 Bus from Manila to Alaminos City (5–6 hours via NLEX & TPLEX)",
             "🚤 Boat rental from Lucap Wharf for island-hopping tours"
         ],
         "food": [
-            "Maxine by the Sea – Popular seafood restaurant by the bay",
-            "Lucap Grill & Resto – Known for grilled specialties"
+            {"name": "Maxine by the Sea", "link": "https://www.maxinebythesea.com"},
+            {"name": "Lucap Grill & Resto", "link": "https://www.facebook.com/LucapGrillResto"},
+            {"name": "The Hungry Traveller", "link": "https://www.facebook.com/thehungrytravelleralaminos"}
         ],
         "hotels": [
-            "Island Tropic Hotel and Restaurant",
-            "Casa del Camba Resort",
-            "Alaminos City Hotel"
+            {"name": "Island Tropic Hotel and Restaurant", "link": "https://www.facebook.com/islandtropichotel"},
+            {"name": "Casa del Camba Resort", "link": "https://www.facebook.com/casadelcambaresort"},
+            {"name": "Alaminos City Hotel", "link": "https://www.facebook.com/alaminoscityhotel"}
         ],
         "attractions": [
-            "Governor’s Island – panoramic viewpoint",
-            "Quezon Island – picnic and swimming area",
-            "Children’s Island – family-friendly beach",
-            "Cuenco Island – cave and sandbar experience"
+            {"name": "Governor’s Island", "link": "https://www.tripadvisor.com/Attraction_Review-g659925-d320442"},
+            {"name": "Quezon Island", "link": "https://www.tripadvisor.com/Attraction_Review-g659925-d320443"},
+            {"name": "Children’s Island", "link": "https://www.tripadvisor.com/Attraction_Review-g659925-d320444"}
         ]
     }
 }
 
-# ------------------- Helper: Static fallback plan -------------------
+# ------------------- FALLBACK PLAN -------------------
 def static_hundred_islands_plan(budget: int, days: int):
-    """Return your previous static plan for Hundred Islands (fallback)."""
     itinerary = [
-        "Day 1: Arrive in Alaminos City and check in to your hotel near Lucap Wharf.",
-        "Day 2: Start island hopping — visit Governor’s, Quezon, and Children’s Islands.",
-        "Day 3: Explore Cuenco Island’s cave and enjoy swimming before heading home."
+        "Day 1: Arrive in Alaminos and check in at your hotel near Lucap Wharf.",
+        "Day 2: Island hopping – Governor’s, Quezon, and Children’s Islands.",
+        "Day 3: Explore Cuenco Island’s caves and swim before heading home."
     ]
     cost_per_day = 3000
     estimated_cost = cost_per_day * days
@@ -137,199 +115,102 @@ def static_hundred_islands_plan(budget: int, days: int):
         "estimated_cost": estimated_cost,
         "remaining": remaining,
         "suggestion": "You’re within budget!" if remaining > 0 else "Consider increasing your budget.",
-        "itinerary": itinerary,
-        "food": [{"name": "Maxine by the Sea", "link": "https://www.maxinebythesea.com"}],
-        "hotels": [{"name": "Island Blue Grill & Restaurant", "link": "https://restaurantguru.com/Island-Blue-Grill-and-Restaurant-Alaminos"},{"name": "islandtropichotel", "link": "https://islandtropichotel.com"}],
-        "attractions": [{"name": "Islands", "link": "https://national-parks.org/philippines/hundred-islands"}]
+        "itinerary": itinerary[:days],
+        "food": destinations["hundred_islands"]["food"],
+        "hotels": destinations["hundred_islands"]["hotels"],
+        "attractions": destinations["hundred_islands"]["attractions"]
     }
 
-# ------------------- Gemini integration -------------------
-def call_gemini_generate(prompt: str, max_tokens: int = 800):
-    """
-    Call Gemini to generate text. Returns a dict with:
-      - 'success': bool
-      - 'text': the raw text (if any)
-      - 'json': parsed JSON (if the model returned JSON and parsing succeeded)
-      - 'error': error message (if any)
-    """
+# ------------------- GEMINI CALL -------------------
+def call_gemini_generate(prompt: str):
     result = {"success": False, "text": None, "json": None, "error": None}
-
-    # Ensure client available and API key present
     if genai is None:
-        result["error"] = "gemini client library not installed"
+        result["error"] = "Gemini not installed"
         return result
-
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
-        result["error"] = "GEMINI_API_KEY not set in environment"
+        result["error"] = "Missing GEMINI_API_KEY"
         return result
-
     try:
         genai.configure(api_key=api_key)
-
-        # Example usage — model name may vary by availability in your account
-        # This follows the pattern used earlier: model.generate_content(prompt)
-        # Adjust if your gemini client differs.
         model = genai.GenerativeModel("models/gemini-1.5-flash")
         response = model.generate_content(prompt)
-
-
-        # The response shape may vary; try to get text in common places:
-        text = None
-        if hasattr(response, "text"):
-            text = response.text
-        elif isinstance(response, dict):
-            # some client versions return dict-like results
-            text = response.get("candidates", [{}])[0].get("content")
-        else:
-            # fallback to str()
-            text = str(response)
-
-        result["text"] = text
-
-        # Try to parse JSON (we ask the model to output JSON)
+        text = getattr(response, "text", str(response))
+        print("\n🧠 GEMINI RAW OUTPUT:\n", text, "\n")
+        result["text"] = text.strip()
         try:
             parsed = json.loads(text)
             result["json"] = parsed
             result["success"] = True
         except Exception:
-            # not JSON — still treat as success if text present
-            result["success"] = bool(text and len(text.strip()) > 0)
+            result["success"] = bool(text.strip())
     except Exception as e:
-        result["error"] = f"Gemini call failed: {e}"
-        # keep stacktrace in logs
+        result["error"] = str(e)
         print("Gemini exception:", traceback.format_exc())
-
     return result
 
+# ------------------- GEMINI ITINERARY LOGIC -------------------
 def generate_with_gemini(place: str, budget: int, days: int):
-    """
-    Build a prompt asking Gemini to return a JSON object with itinerary, hotels, restaurants, attractions,
-    estimated_cost, and suggestion.
-    Automatically includes real Google search links for each recommended place.
-    """
     prompt = f"""
-You are a helpful travel assistant. Produce a JSON object (only JSON) with this structure:
+You are TripWise AI — a professional Filipino travel planner.
+Create a JSON-only trip plan for {place}, Philippines.
 
+Rules:
+- Include exactly {days} days in itinerary.
+- Budget: ₱{budget}.
+- Use real attractions, restaurants, and hotels.
+- Return ONLY JSON (no text outside it).
+
+Example format:
 {{
-  "destination": "<destination name>",
-  "days": <integer>,
-  "budget": <integer>,
+  "destination": "{place}",
+  "days": {days},
+  "budget": {budget},
   "estimated_cost": <integer>,
   "remaining": <integer>,
-  "suggestion": "<short advice about budget>",
-  "itinerary": ["Day 1: ...", "Day 2: ...", ...],
-  "hotels": [{{"name": "...", "link": "https://www.google.com/search?q=<hotel name>+{place}"}}],
-  "food": [{{"name": "...", "link": "https://www.google.com/search?q=<restaurant name>+{place}"}}],
-  "attractions": [{{"name": "...", "link": "https://www.google.com/search?q=<attraction name>+{place}"}}]
+  "suggestion": "<budget advice>",
+  "itinerary": ["Day 1: ...", "Day 2: ...", ...]
 }}
-
-Generate a {days}-day travel plan for '{place}' in the Philippines with a budget of ₱{budget}.
-Make sure each link is a valid Google search query.
-Do not include any explanation outside the JSON.
 """
 
     res = call_gemini_generate(prompt)
+
     if res["success"] and res["json"]:
         parsed = res["json"]
+        itinerary = parsed.get("itinerary", [])
+        if len(itinerary) < days:
+            for i in range(len(itinerary), days):
+                itinerary.append(f"Day {i+1}: Explore more of {place}.")
+        parsed["itinerary"] = itinerary[:days]
+        parsed["estimated_cost"] = parsed.get("estimated_cost", days * 3000)
+        parsed["remaining"] = budget - parsed["estimated_cost"]
 
-        # Enrich Gemini results with real Google Places URLs
-        parsed["hotels"] = enrich_with_google_places(parsed.get("hotels", []), place)
-        parsed["food"] = enrich_with_google_places(parsed.get("food", []), place)
-        parsed["attractions"] = enrich_with_google_places(parsed.get("attractions", []), place)
-
+        dest_key = place.lower().replace(" ", "_")
+        if dest_key in destinations:
+            parsed["hotels"] = destinations[dest_key]["hotels"]
+            parsed["food"] = destinations[dest_key]["food"]
+            parsed["attractions"] = destinations[dest_key]["attractions"]
         return parsed
 
-    # If Gemini returned plain text, wrap it as minimal structured JSON
-    if res["success"] and res["text"]:
+    if res["text"]:
+        lines = [f"Day {i+1}: {line.strip()}" for i, line in enumerate(res["text"].split("\n")[:days]) if line.strip()]
+        while len(lines) < days:
+            lines.append(f"Day {len(lines)+1}: Continue exploring {place}.")
+        dest_key = place.lower().replace(" ", "_")
         return {
-            "destination": place.title(),
+            "destination": place,
             "days": days,
             "budget": budget,
-            "estimated_cost": 0,
-            "remaining": budget,
-            "suggestion": "Generated by Gemini (text format).",
-            "itinerary": [res["text"]],
-            "food": [{"name": "Local restaurant", "link": f"https://www.google.com/search?q=restaurants+in+{place}"}],
-            "hotels": [{"name": "Local hotel", "link": f"https://www.google.com/search?q=hotels+in+{place}"}],
-            "attractions": [{"name": "Local attraction", "link": f"https://www.google.com/search?q=tourist+spots+in+{place}"}]
+            "estimated_cost": days * 3000,
+            "remaining": budget - (days * 3000),
+            "suggestion": "Fallback itinerary parsed from text.",
+            "itinerary": lines,
+            "hotels": destinations.get(dest_key, {}).get("hotels", []),
+            "food": destinations.get(dest_key, {}).get("food", []),
+            "attractions": destinations.get(dest_key, {}).get("attractions", [])
         }
 
-    # Fallback: use static data for Hundred Islands if Gemini fails
-    if place.lower() in ["hundred islands", "hundred_islands"]:
-        return static_hundred_islands_plan(budget, days)
-
-    # Final default fallback
-    return {
-        "destination": place.title(),
-        "days": days,
-        "budget": budget,
-        "estimated_cost": 3500 * days,
-        "remaining": budget - (3500 * days),
-        "suggestion": "Fallback plan — consider checking network/API.",
-        "itinerary": [
-            f"Day 1: Explore nearby attractions in {place}.",
-            "Day 2: Try local restaurants.",
-            "Day 3: Relax and enjoy your hotel stay."
-        ],
-        "food": [{"name": "Local restaurant", "link": f"https://www.google.com/search?q=restaurants+in+{place}"}],
-        "hotels": [{"name": "Local hotel", "link": f"https://www.google.com/search?q=hotels+in+{place}"}],
-        "attractions": [{"name": "Local attraction", "link": f"https://www.google.com/search?q=tourist+spots+in+{place}"}]
-    }
-
-import requests
-
-# ---------- GOOGLE PLACES INTEGRATION ----------
-import requests
-
-# ---------- GOOGLE PLACES INTEGRATION (UPDATED) ----------
-def enrich_with_google_places(items, place):
-    """
-    Replace Gemini's generic links with real websites or Google Maps URLs
-    using the Google Places API.
-    """
-    api_key = os.environ.get("GOOGLE_PLACES_KEY")
-    if not api_key:
-        print("⚠️ GOOGLE_PLACES_KEY not set — skipping enrichment.")
-        return items
-
-    enriched = []
-    for entry in items:
-        name = entry["name"] if isinstance(entry, dict) else str(entry)
-        try:
-            url = "https://maps.googleapis.com/maps/api/place/findplacefromtext/json"
-            params = {
-                "input": f"{name} {place} Philippines",
-                "inputtype": "textquery",
-                # ✅ use valid fields only
-                "fields": "name,place_id,website,formatted_address",
-                "key": api_key
-            }
-            res = requests.get(url, params=params, timeout=10).json()
-            print(f"🔍 Google Places lookup for {name} → {res}")  # debug
-
-            link = None
-            if res.get("status") == "OK" and res.get("candidates"):
-                info = res["candidates"][0]
-                link = info.get("website")
-                if not link and info.get("place_id"):
-                    # ✅ fallback to a working Google Maps link
-                    link = f"https://www.google.com/maps/place/?q=place_id:{info['place_id']}"
-
-            # ✅ final fallback (if API returned nothing)
-            if not link:
-                link = f"https://www.google.com/search?q={name.replace(' ', '+')}+{place}+Philippines"
-
-            enriched.append({"name": name, "link": link})
-
-        except Exception as e:
-            print(f"⚠️ Google Places error for {name}: {e}")
-            enriched.append({
-                "name": name,
-                "link": f"https://www.google.com/search?q={name.replace(' ', '+')}+{place}"
-            })
-
-    return enriched
+    return static_hundred_islands_plan(budget, days)
 
 # ------------------- ROUTES -------------------
 @app.route('/')
@@ -347,8 +228,7 @@ def login():
             session['user'] = email
             flash('Login successful!', 'success')
             return redirect(url_for('home'))
-        else:
-            flash('Invalid email or password.', 'danger')
+        flash('Invalid credentials', 'danger')
     return render_template('login.html')
 
 @app.route('/signup', methods=['GET', 'POST'])
@@ -357,28 +237,16 @@ def signup():
         name = request.form['name']
         email = request.form['email']
         password = request.form['password']
-        confirm_password = request.form['confirm_password']
-
+        confirm = request.form['confirm_password']
         if email in users:
             flash('Email already registered.', 'warning')
-        elif password != confirm_password:
+        elif password != confirm:
             flash('Passwords do not match.', 'danger')
         else:
             users[email] = {'password': password, 'name': name}
             flash('Account created successfully!', 'success')
             return redirect(url_for('login'))
-
     return render_template('signup.html')
-
-@app.route('/forgot', methods=['GET', 'POST'])
-def forgot():
-    if request.method == 'POST':
-        email = request.form['email']
-        if email in users:
-            flash('Password reset link sent to your email. (Mock-up only)', 'info')
-        else:
-            flash('Email not found.', 'danger')
-    return render_template('forgot.html')
 
 @app.route('/home')
 def home():
@@ -388,65 +256,22 @@ def home():
     user_email = session['user']
     return render_template('home.html', user=users[user_email]['name'], destinations=destinations)
 
-@app.route('/destination/<place>')
-def destination_detail(place):
-    if place not in destinations:
-        flash('Destination not found.', 'danger')
-        return redirect(url_for('home'))
-    destination = destinations[place]
-    return render_template('destination.html', destination=destination)
-
-@app.route('/place-details/<place_name>')
-def place_details(place_name):
-    """Show details of a single place."""
-    api_key = os.environ.get("GOOGLE_PLACES_KEY")
-    place_data = {}
-
-    if api_key:
-        try:
-            url = "https://maps.googleapis.com/maps/api/place/findplacefromtext/json"
-            params = {
-                "input": f"{place_name} Philippines",
-                "inputtype": "textquery",
-                "fields": "name,formatted_address,website,url,rating,user_ratings_total",
-                "key": api_key
-            }
-            res = requests.get(url, params=params).json()
-            if res.get("candidates"):
-                place_data = res["candidates"][0]
-        except Exception as e:
-            place_data["error"] = str(e)
-
-    return render_template('place_details.html', place_name=place_name, place=place_data)
-
-
-# ------------------- PLAN A TRIP -------------------
 @app.route('/plan-trip', methods=['GET', 'POST'])
 def plan_trip():
     if request.method == 'POST':
         destination = request.form['destination']
-        try:
-            budget = int(request.form['budget'])
-        except Exception:
-            budget = 0
-        try:
-            days = int(request.form['days'])
-        except Exception:
-            days = 1
-
-        # If using Gemini, attempt to generate using the AI
+        budget = int(request.form.get('budget', 0))
+        days = int(request.form.get('days', 1))
         plan = generate_with_gemini(destination, budget, days)
         return render_template('trip_plan_result.html', plan=plan, destination=destination.title())
-
-    # GET -> show form (populated with destinations)
     return render_template('plan_trip.html', destinations=destinations)
 
 @app.route('/logout')
 def logout():
     session.pop('user', None)
-    flash('You have been logged out.', 'info')
+    flash('Logged out successfully.', 'info')
     return redirect(url_for('login'))
 
 if __name__ == '__main__':
-    print("Starting TripWise (Gemini mode). GEMINI_API_KEY set?:", bool(os.environ.get("GEMINI_API_KEY")))
+    print("✅ TripWise running with Gemini itineraries and curated recommendations.")
     app.run(debug=True)
